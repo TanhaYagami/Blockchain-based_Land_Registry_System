@@ -103,13 +103,13 @@ contract LandRegistrySystem{
      // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx STEP TWO xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
 
 
-    function LandInspectorInfo(string memory Name, uint Age,string memory Designation) public OnlyforLandInspactor{
-        LandInspectorDetails[msg.sender] = landInspectorDetails(Name,Age,Designation); 
+    function LandInspectorInfo(string memory _Name, uint _Age,string memory _Designation) public OnlyforLandInspactor{
+        LandInspectorDetails[msg.sender] = landInspectorDetails(_Name,_Age,_Designation); 
         LandInspectorDetailsSubmission = landInspectorDetailsSubmission.Submited;}
             
 
-    function SellerInfo(string memory Name, uint Age,string memory City, uint CNIC,string memory Email) public {
-        SellerDetails[msg.sender] = sellerDetails(Name,Age,City,CNIC,Email);
+    function SellerInfo(string memory _Name, uint _Age,string memory _City, uint _CNIC,string memory _Email) public {
+        SellerDetails[msg.sender] = sellerDetails(_Name,_Age,_City,_CNIC,_Email);
         Seller = payable (msg.sender);
         SellerDetailsSubmission= sellerDetailsSubmission.Submited;
           }
@@ -166,10 +166,10 @@ contract LandRegistrySystem{
      // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx STEP THREE xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
 
 
-    function BuyerInfo(string memory Name, uint Age,string memory City, uint CNIC,string memory Email) public{
+    function BuyerInfo(string memory _Name, uint _Age,string memory _City, uint _CNIC,string memory _Email) public{
         
         require (LandVerification == landVerification.verified);
-        BuyerDetails[msg.sender] = buyerDetails(Name,Age,City,CNIC,Email); 
+        BuyerDetails[msg.sender] = buyerDetails(_Name,_Age,_City,_CNIC,_Email); 
         BuyerDetailsSubmission= buyerDetailsSubmission.Submited;
         Buyer = msg.sender;         
     }
