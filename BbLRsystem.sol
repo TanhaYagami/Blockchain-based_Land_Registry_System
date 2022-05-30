@@ -3,14 +3,17 @@ pragma solidity ^0.8.0;
 
 
 contract LandRegistrySystem{
-    uint public LandId;
-    uint public LandPrice;
+    
     address public  LandInspectorId;
     address payable public Seller;
     address public Buyer;
-    address public LandsOwner;
-    bool public isBuyer;
-    bool public isSeller;
+    uint public LandId;
+    address internal LandsOwner;
+    uint internal LandPrice;
+    uint internal LandArea;
+    string internal LandCity;
+    bool internal isBuyerVer;
+    bool internal isSellerVer;
 
 
     struct landDetails{
@@ -21,7 +24,12 @@ contract LandRegistrySystem{
     uint PropertyPID;
     address _LandsOwner;
     }
-    mapping(uint => landDetails) public LandDetails; 
+    mapping(uint => landDetails) public LandDetails;
+    mapping(uint => string) public landCity; 
+    mapping(uint => uint) public landArea; 
+    mapping(uint => uint) public landPrice; 
+    mapping(uint => address) public LandsCurrentOwner;
+   
 
 
     struct buyerDetails{
@@ -39,6 +47,10 @@ contract LandRegistrySystem{
     uint CNIC; 
     string Email;}
     mapping(address => sellerDetails) public SellerDetails; 
+
+    mapping(address => bool) public isBuyerVerified; 
+    mapping(address => bool) public isSellerVerified; 
+
 
 
     struct landInspectorDetails{
@@ -79,11 +91,11 @@ contract LandRegistrySystem{
         _;
     }
      modifier OnlyforSelller(){
-        require(msg.sender == Seller," Only the landInspector can approve this Verification");
+        require(msg.sender == Seller," Only the Seller can call this Function");
         _;
     }
      modifier OnlyforBuyer(){
-        require(msg.sender == Buyer," Only the landInspector can approve this Verification");
+        require(msg.sender == Buyer," Only the Buyer can call this Function");
         _;
     }
 
@@ -103,12 +115,12 @@ contract LandRegistrySystem{
           }
 
     function sellerVerificationInc() public OnlyforLandInspactor{
-        require (SellerDetailsSubmission == sellerDetailsSubmission.Submited, "The required is not obligated ");
+        require (SellerDetailsSubmission == sellerDetailsSubmission.Submited, "The require is not obligated ");
         SellerVerification = sellerVerification.verified;
-        isSeller = true;}
+        isSellerVer = true;}
 
     function LandInfo(uint _AreaInSquar,string memory _City,string memory _Place,uint _landPrice,uint _PropertyPID) public OnlyforSelller{
-        require (SellerVerification == sellerVerification.verified, "The required is not obligated ");
+        require (SellerVerification == sellerVerification.verified, "The require is not obligated ");
         landDetails storage landDetailsSheet= LandDetails[LandId];
         landDetailsSheet.AreaInSquar=_AreaInSquar;
         landDetailsSheet.City=_City;
@@ -121,12 +133,33 @@ contract LandRegistrySystem{
         LandInfoSubmission = landInfoSubmission.submited;
         LandId++;
         }
-         
+
 
     function landVerificationInc() public OnlyforLandInspactor{
         require (LandInfoSubmission == landInfoSubmission.submited, "The require is not obligated ");
         LandVerification= landVerification.verified;
         LandStatus = landStatus.OnAir;
+    }
+
+
+
+    function GetArea(uint EnterLandId)public{
+        landArea[EnterLandId]= LandArea;
+    }
+    function GetLandCity(uint enterLandId)public{
+        landCity[enterLandId]= LandCity;
+    }
+    function GetLandPrice(uint _EnterLandId)public{
+        landPrice[_EnterLandId]= LandPrice;
+    }
+    function GetLandCurrent(uint _EnterLandID)public{
+        LandsCurrentOwner[_EnterLandID]=LandsOwner;}
+
+    function isBuyer(address EnterBuyerAddress)public{
+        isBuyerVerified[EnterBuyerAddress]= isBuyerVer;
+    }
+     function isSeller(address EnterSellerAddress)public{
+        isSellerVerified[EnterSellerAddress]= isSellerVer;
     }
 
 
@@ -145,7 +178,7 @@ contract LandRegistrySystem{
         require (BuyerDetailsSubmission == buyerDetailsSubmission.Submited, "The require is not obligated ");
         require (LandStatus == landStatus.OnAir,"The require No.2 is not obligated ");
         BuyerVerification = buyerVerification.verified;
-        isBuyer = true;  
+        isBuyerVer = true;  
     }
     
     function ConfrimationPurchasing()public payable OnlyforBuyer {
@@ -155,13 +188,13 @@ contract LandRegistrySystem{
         LandStatus = landStatus.Booked;
     }
 
-    function payments() public OnlyforBuyer {
+    function Payments() public OnlyforBuyer {
         require (LandStatus == landStatus.Booked, "The require is not obligated ");
         Seller.transfer(address(this).balance);
         LandStatus = landStatus.Releas;
     }
 
-    function transferOwnership() public  OnlyforSelller{
+    function TransferOwnership() public OnlyforSelller{
         require (LandStatus == landStatus.Releas, "The require is not obligated ");
         LandsOwner=Buyer;
         LandStatus = landStatus.Inactive;
