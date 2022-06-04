@@ -196,7 +196,7 @@ contract LandRegistrySystem{
         Seller.transfer(msg.value);
 
         LandStatus = landStatus.Booked;
-        emit Confirmation(msg.sender, address(this), msg.value);
+        emit Confirmation(msg.sender, Seller, msg.value);
     }
 
     function TransferOwnership() public OnlyforSelller{
