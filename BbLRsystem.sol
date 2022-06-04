@@ -10,8 +10,6 @@ contract LandRegistrySystem{
     uint public LandId;
     address internal LandsOwner;
     uint internal LandPrice;
-    uint internal LandArea;
-    string internal LandCity;
     bool internal isBuyerVer;
     bool internal isSellerVer;
 
@@ -74,13 +72,18 @@ contract LandRegistrySystem{
     enum landVerification{verified,Rejected}
     landVerification internal LandVerification;
 
+
     enum buyerDetailsSubmission{Submited, HaventSubmited}
     buyerDetailsSubmission internal BuyerDetailsSubmission;
     enum buyerVerification{verified,Rejected}
     buyerVerification internal BuyerVerification;
 
-    enum landStatus{OnAir, Booked, Releas, Inactive}
+    enum landStatus{OnAir, Booked, Inactive}
     landStatus internal LandStatus;
+
+
+    event Confirmation(address from, address indexed to, uint value);
+    event payments(address indexed from, address to, uint value);
 
 
      constructor(){
@@ -119,7 +122,7 @@ contract LandRegistrySystem{
         SellerVerification = sellerVerification.verified;
         isSellerVer = true;}
 
-    function LandInfo(uint _AreaInSquar,string memory _City,string memory _Place,uint _landPrice,uint _PropertyPID) public OnlyforSelller{
+    function LandInfo(uint EnterLandId,uint _AreaInSquar,string memory _City,string memory _Place,uint _landPrice,uint _PropertyPID) public OnlyforSelller{
         require (SellerVerification == sellerVerification.verified, "The require is not obligated ");
         landDetails storage landDetailsSheet= LandDetails[LandId];
         landDetailsSheet.AreaInSquar=_AreaInSquar;
@@ -131,6 +134,10 @@ contract LandRegistrySystem{
         LandPrice =_landPrice;
         LandsOwner=msg.sender;
         LandInfoSubmission = landInfoSubmission.submited;
+
+        landArea[EnterLandId]= landDetailsSheet.AreaInSquar=_AreaInSquar; 
+        landCity[EnterLandId]=landDetailsSheet.City=_City;
+        LandsCurrentOwner[EnterLandId]=landDetailsSheet._LandsOwner=msg.sender;
         LandId++;
         }
 
@@ -143,17 +150,18 @@ contract LandRegistrySystem{
 
 
 
-    function GetArea(uint EnterLandId)public{
-        landArea[EnterLandId]= LandArea;
+    function GetArea(uint EnterLandId)public view returns(uint){
+        return landArea[EnterLandId];
     }
-    function GetLandCity(uint enterLandId)public{
-        landCity[enterLandId]= LandCity;
+    function GetLandCity(uint EnterLandId)public view returns(string memory){
+        return landCity[EnterLandId];
     }
-    function GetLandPrice(uint _EnterLandId)public{
-        landPrice[_EnterLandId]= LandPrice;
+    function GetLandPrice(uint EnterLandId)public view returns(uint){
+        return landPrice[EnterLandId];
     }
-    function GetLandCurrent(uint _EnterLandID)public{
-        LandsCurrentOwner[_EnterLandID]=LandsOwner;}
+    function GetLandCurrent(uint EnterLandId)public view returns(address){
+        return LandsCurrentOwner[EnterLandId];
+    }
 
     function isBuyer(address EnterBuyerAddress)public{
         isBuyerVerified[EnterBuyerAddress]= isBuyerVer;
@@ -178,25 +186,22 @@ contract LandRegistrySystem{
         require (BuyerDetailsSubmission == buyerDetailsSubmission.Submited, "The require is not obligated ");
         require (LandStatus == landStatus.OnAir,"The require No.2 is not obligated ");
         BuyerVerification = buyerVerification.verified;
-        isBuyerVer = true;  
+        isBuyerVer = true;
     }
     
     function ConfrimationPurchasing()public payable OnlyforBuyer {
         require (LandInfoSubmission == landInfoSubmission.submited,"The require is not obligated ");
         require (BuyerDetailsSubmission == buyerDetailsSubmission.Submited,"The require No.2 is not obligated ");
         require (msg.value == LandPrice,"The amount must be Equal to the Price of Land");
-        LandStatus = landStatus.Booked;
-    }
+        Seller.transfer(msg.value);
 
-    function Payments() public OnlyforBuyer {
-        require (LandStatus == landStatus.Booked, "The require is not obligated ");
-        Seller.transfer(address(this).balance);
-        LandStatus = landStatus.Releas;
+        LandStatus = landStatus.Booked;
+        emit Confirmation(msg.sender, address(this), msg.value);
     }
 
     function TransferOwnership() public OnlyforSelller{
-        require (LandStatus == landStatus.Releas, "The require is not obligated ");
-        LandsOwner=Buyer;
+        require (LandStatus == landStatus.Booked, "The require is not obligated ");
+        LandsOwner = Buyer;
         LandStatus = landStatus.Inactive;
     }
 }
